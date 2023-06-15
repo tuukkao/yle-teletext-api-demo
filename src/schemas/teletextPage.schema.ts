@@ -23,12 +23,7 @@ export const teletextPageSchema = z.object({
     xml: z.string(),
     page: z.object({
       number: z.string(),
-      name: z.string(),
-      time: z.string(),
       subpagecount: z.string(),
-      prevpg: z.string(),
-      nextpg: z.string(),
-      toptype: z.string(),
       subpage: z.array(teletextSubpageSchema),
     }),
   }),

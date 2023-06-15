@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
+    "build": "tsc",
+    "start": "npm run build&&node build/src/api/app.js",
+    "knex": "knex",
     "format": "prettier -w src",
     "lint": "eslint src",
     "prepare": "husky install"
@@ -14,14 +17,18 @@
     "dotenv": "^16.1.4",
     "eslint": "^8.42.0",
     "express": "^4.18.2",
+    "knex": "^2.4.2",
     "lodash": "^4.17.21",
+    "pg": "^8.11.0",
     "zod": "^3.21.4"
   },
   "devDependencies": {
     "@types/express": "^4.17.17",
     "@types/lodash": "^4.14.195",
+    "@types/node": "^20.3.1",
     "@typescript-eslint/eslint-plugin": "^5.59.11",
     "@typescript-eslint/parser": "^5.59.11",
+    "concurrently": "^8.2.0",
     "husky": "^8.0.0",
     "lint-staged": "^13.2.2",
     "prettier": "^2.8.8",

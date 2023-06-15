@@ -1,0 +1,11 @@
+services:
+  db:
+    image: postgres:15
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_USER: teletext
+      POSTGRES_PASSWORD: teletext
+      POSTGRES_DB: teletext
+    volumes:
+      - /var/lib/postgresql/data
