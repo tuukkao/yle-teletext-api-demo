@@ -4,8 +4,8 @@
   "description": "",
   "scripts": {
     "build": "tsc",
-    "start": "npm run build&&node build/src/app.js",
-    "start:dev": "ts-node-dev src/app.ts",
+    "start": "knex migrate:latest&&node build/src/app.js",
+    "start:dev": "knex migrate:latest&&ts-node-dev src/app.ts",
     "knex": "knex",
     "format": "prettier -w src",
     "lint": "eslint src",
