@@ -1,14 +1,14 @@
+import "dotenv/config";
 import type { Knex } from "knex";
-import { config } from "./src/config";
 
 const knexConfig: Knex.Config = {
   client: "postgresql",
   connection: {
-    host: config.DB_HOST,
-    port: config.DB_PORT,
-    database: config.DB_DATABASE,
-    user: config.DB_USERNAME,
-    password: config.Db_PASSWORD,
+    host: process.env.DB_HOST,
+    port: parseInt(process.env.DB_PORT || ""),
+    database: process.env.DB_DATABASE,
+    user: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
   },
   pool: {
     min: 2,

@@ -4,8 +4,19 @@ services:
     ports:
       - "5435:5432"
     environment:
-      POSTGRES_USER: teletext
-      POSTGRES_PASSWORD: teletext
-      POSTGRES_DB: teletext
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
     volumes:
       - /var/lib/postgresql/data
+  api:
+    build: .
+    depends_on:
+      - db
+    env_file:
+      - ./.env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+    ports:
+      - "${PORT}:${PORT}"
