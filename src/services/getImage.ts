@@ -1,10 +1,15 @@
 import { knexConnection, tables } from "../database";
 
-async function getImage(
+export interface ImageResponse {
+  modifiedDate: Date;
+  image: ArrayBuffer;
+}
+
+export async function getImage(
   pageNumber: number,
   subpageNumber: number,
   timestamp: Date
-): Promise<ArrayBuffer> {
+): Promise<ImageResponse | undefined> {
   const result = await knexConnection
     .select("image", "modified_date")
     .from(tables.teletextPages)
@@ -17,5 +22,9 @@ async function getImage(
     .limit(1)
     .first();
 
-  return result?.image;
+  if (result === undefined) return undefined;
+  return {
+    modifiedDate: result.modified_date,
+    image: result.image,
+  };
 }
