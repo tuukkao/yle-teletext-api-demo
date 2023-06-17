@@ -10,7 +10,7 @@ export const configSchema = z.object({
   DB_HOST: z.string().nonempty(),
   DB_PORT: z.coerce.number().gt(0),
   DB_USERNAME: z.string().nonempty(),
-  Db_PASSWORD: z.string().nonempty(),
+  DB_PASSWORD: z.string().nonempty(),
   DB_DATABASE: z.string().nonempty(),
   SCHEDULING_ENABLED: z.boolean().default(true),
   FETCH_TELETEXT_SCHEDULE: z.string().default("*/5 * * * *"),
