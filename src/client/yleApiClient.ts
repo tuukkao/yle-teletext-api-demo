@@ -1,5 +1,5 @@
 import axios, { Axios } from "axios";
-import { config } from "./config";
+import { config } from "../config";
 
 export const yleApiClient: Axios = axios.create({
   baseURL: config.YLE_API_BASE_URL,

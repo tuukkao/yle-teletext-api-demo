@@ -1,5 +1,5 @@
 import type { Knex } from "knex";
-import { config } from "./src/common/config";
+import { config } from "./src/config";
 
 const knexConfig: Knex.Config = {
   client: "postgresql",

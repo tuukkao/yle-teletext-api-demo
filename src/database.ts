@@ -1,4 +1,4 @@
-import * as knexConfig from "../../knexfile";
+import * as knexConfig from "../knexfile";
 import knex from "knex";
 
 export const knexConnection = knex(knexConfig);

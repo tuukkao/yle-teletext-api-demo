@@ -1,13 +1,12 @@
 import { AxiosError } from "axios";
 import { range } from "lodash";
-import { yleApiClient } from "../../common/yleApiClient";
+import { yleApiClient } from "../client/yleApiClient";
 import {
   TeletextPage,
   teletextPageSchema,
-} from "../../schemas/teletextPage.schema";
+} from "../schemas/teletextPage.schema";
 import { knexConnection, tables } from "../database";
-/* eslint-disable @typescript-eslint/no-var-requires */
-const allPages: number[] = require("../../../resources/pages.json");
+import { fetchPageNumbers } from "./fetchPageNumbers";
 
 interface TeletextPageResponse {
   modifiedDate: Date;
@@ -34,7 +33,7 @@ async function getTeletextPageData(
     const lastModifiedDate = response.headers["last-modified"];
 
     return {
-      modifiedDate: lastModifiedDate && new Date(lastModifiedDate),
+      modifiedDate: new Date(lastModifiedDate),
       page: teletextPageSchema.parse(response.data),
     };
   } catch (error) {
@@ -73,12 +72,7 @@ async function getlatestDateForPage(
     .where({
       page_number: pageNumber,
     })
-    .orderBy([
-      {
-        column: "modified_date",
-        order: "desc",
-      },
-    ])
+    .orderBy("modified_date", "desc")
     .limit(1)
     .first();
 
@@ -151,16 +145,9 @@ async function saveImagesForPage(pageNumber: number) {
   }
 }
 
-async function fetchTeletextPages() {
+export async function fetchTeletextPages() {
+  const allPages = await fetchPageNumbers();
   await Promise.all(
     allPages.map(async (pageNumber) => await saveImagesForPage(pageNumber))
   );
 }
-
-// Used for temporary standalone testing
-async function main() {
-  await fetchTeletextPages();
-  await knexConnection.destroy();
-}
-
-main();

@@ -1,5 +1,5 @@
 import express from "express";
-import { config } from "../common/config";
+import { config } from "./config";
 
 const app = express();
 app.listen(config.PORT, () => {
