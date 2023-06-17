@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const configSchema = z.object({
   PORT: z.coerce.number().gt(0),
+  LOG_LEVEL: z.string().default("info"),
   YLE_APP_ID: z.string().nonempty(),
   YLE_APP_KEY: z.string().nonempty(),
   YLE_API_BASE_URL: z.string().nonempty(),

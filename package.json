@@ -21,6 +21,7 @@
     "knex": "^2.4.2",
     "lodash": "^4.17.21",
     "pg": "^8.11.0",
+    "winston": "^3.9.0",
     "zod": "^3.21.4",
     "zod-express-middleware": "^1.4.0"
   },

@@ -7,6 +7,7 @@ import {
 } from "../schemas/teletextPage.schema";
 import { knexConnection, tables } from "../database";
 import { fetchPageNumbers } from "./fetchPageNumbers";
+import { logger } from "../logger";
 
 interface TeletextPageResponse {
   modifiedDate: Date;
@@ -42,7 +43,7 @@ async function getTeletextPageData(
       error.response &&
       error.response.status === 404
     ) {
-      console.log(`Page number ${pageNumber} doesn't exist.`);
+      logger.info(`Page number ${pageNumber} doesn't exist.`);
       return undefined;
     }
   }
@@ -52,6 +53,9 @@ async function getTeletextPageImage(
   pageNumber: number,
   subpageNumber: number
 ): Promise<ArrayBuffer> {
+  logger.debug(
+    `Getting image for page ${pageNumber}, subpage ${subpageNumber}`
+  );
   const response = await yleApiClient.get(
     `/v1/teletext/images/${pageNumber}/${subpageNumber}.png`,
     {
@@ -88,6 +92,9 @@ async function isNewerPage(
 }
 
 async function saveImage(data: savePageData): Promise<void> {
+  logger.debug(
+    `Saving image for page ${data.pageNumber}, subpage ${data.subpageNumber}`
+  );
   await knexConnection
     .insert({
       page_number: data.pageNumber,
@@ -96,7 +103,6 @@ async function saveImage(data: savePageData): Promise<void> {
       image: data.image,
     })
     .into(tables.teletextPages);
-  console.log("operatio ndone");
 }
 
 function subpageNumbersForPage(page: TeletextPage): number[] {
@@ -109,9 +115,7 @@ async function saveImageForSubpage(
   subpageNumber: number,
   modifiedDate: Date
 ): Promise<void> {
-  console.log("getting teletext image");
   const image = await getTeletextPageImage(pageNumber, subpageNumber);
-  console.log("got image");
   await saveImage({
     pageNumber,
     subpageNumber,
@@ -125,15 +129,15 @@ async function saveImagesForSubpages(
   modifiedDate: Date
 ): Promise<void> {
   for (const subpageNumber of subpageNumbersForPage(page)) {
-    console.log(`fetching subpage ${subpageNumber}`);
+    logger.debug(`started processing subpage ${subpageNumber}`);
     const pageNumber = parseInt(page.teletext.page.number);
     await saveImageForSubpage(pageNumber, subpageNumber, modifiedDate);
-    console.log("image saved");
+    logger.debug(`Subpage ${subpageNumber} processed`);
   }
 }
 
 async function saveImagesForPage(pageNumber: number) {
-  console.log("Fetching page " + pageNumber);
+  logger.debug(`Started processing page ${pageNumber}`);
   const pageResponse = await getTeletextPageData(pageNumber);
 
   if (pageResponse === undefined) return;
@@ -142,12 +146,16 @@ async function saveImagesForPage(pageNumber: number) {
 
   if (await isNewerPage(pageNumber, modifiedDate)) {
     await saveImagesForSubpages(page, modifiedDate);
+  } else {
+    logger.debug(`page ${pageNumber} already has the latest copy, skipping.`);
   }
 }
 
 export async function fetchTeletextPages() {
+  logger.info("Starting Teletext page import");
   const allPages = await fetchPageNumbers();
   await Promise.all(
     allPages.map(async (pageNumber) => await saveImagesForPage(pageNumber))
   );
+  logger.info("Teletext page import finished");
 }
