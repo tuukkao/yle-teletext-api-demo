@@ -26,6 +26,14 @@ docker-compose up -d
 
 The api is available under the port specified in the configuration file (3100 by default).
 
+You can monitor api's logging by running:
+
+```sh
+docker-compose logs api -f
+```
+
+By default the api fetches teletext pages every 10 minutes. If you want to trigger the fetch job manually then send a POST request to the api's `/v1/update` endpoint. The operation takes about 7 minutes as of this writing.
+
 ## Available endpoints
 
 ### `GET /v1/{pageNumber}/{subpageNumber}.png?time=<unixEpochSeconds>`
@@ -45,7 +53,7 @@ Querying with 2023-06-17t14:00 would return a HTTP 404 since there doesn't exist
 
 The time should be specified as a unix epoch timestamp. For example:
 
-http://localhost:3100/v1/100/1.png?time=1718722380 
+`http://localhost:3100/v1/100/1.png?time=1718722380`
 
 ### `POST /v1/update`
 
@@ -53,9 +61,17 @@ Takes a snapshot of all teletext pages. A manual trigger for the scheduled updat
 
 ## Local development outside of Docker
 
-Run `docker-compose up -d db` to start just the database. Port 5435 is exposed for accessing the databases.
+Install dependencies: `npm install`
+
+Start a database for development: `docker-compose up -d db`
+
+Port 5435 is exposed for accessing the database outside of Docker.
 
 Run `npm run start:dev` to start the api in watch mode.
+
+Run tests: `npm test`
+
+Formatting and linting are performed automatically with each commit. You can also run these manually with `npm run format` and`npm run lint`, respectively.
 
 ## Technical overview
 
@@ -70,6 +86,10 @@ This project was built with the following technologies:
 
 I chose PostgreSQL mostly because it's a good all-around solution for most database needs. However, in this particular case a document database would work just as well since the data we're storing has no relations whatsoever.
 
+### Notes on Teletext image fetching and archiving
+
+We're leveraging the caching information provided by Yle's api to not store duplicate pages. The date provided in each response's `Last-Modified` header is used as the page's creation timestamp. When getting a page the timestamp is always in relation to the page's actual creation time, not the time it was fetched in our database.
+
 ### Things I would do differently in a real-world situation
 
 (See also my to-do's below.)
@@ -78,6 +98,7 @@ I would refactor scheduled jobs (i.e. teletext page update) into a separate serv
 
 ## TO DO
 
+- [ ] Don't start a new scheduling job if another one is already in progress
 - [ ] tests
 - [ ] Refactor modules to have some kind of dependency management and not relying on singleton imports. Writing integration tests takes a lot of unnecessary work with this architecture.
 - [ ] Optimize Docker image size (e.g. fix migrations to run without TypeScript)
