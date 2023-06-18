@@ -1,11 +1,11 @@
 import express from "express";
-import { fetchTeletextPages } from "./services/fetchTeletextPages";
 import { processRequest } from "zod-express-middleware";
+import { getLatestForTimestamp } from "./repositories/teletextPagesRepository";
 import {
   getImageParamsSchema,
   getImageQuerySchema,
 } from "./schemas/getImage.schema";
-import { getImage } from "./services/getImage";
+import { fetchTeletextPages } from "./services/fetchTeletextPages";
 
 const router = express.Router();
 
@@ -17,7 +17,7 @@ router.get(
   }),
   async (req, res, next) => {
     try {
-      const imageResponse = await getImage(
+      const imageResponse = await getLatestForTimestamp(
         req.params.pageNumber,
         req.params.subpageNumber,
         new Date(req.query.time * 1000)
@@ -28,7 +28,7 @@ router.get(
       }
 
       res
-        .header("Last-Modified", imageResponse.modifiedDate.toUTCString())
+        .header("Last-Modified", imageResponse.modified_date.toUTCString())
         .header("Content-Type", "image/png")
         .send(imageResponse.image);
     } catch (error) {

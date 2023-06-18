@@ -7,6 +7,10 @@ import {
   TeletextPage,
   teletextPageSchema,
 } from "../schemas/teletextPage.schema";
+import {
+  createTeletextPage,
+  getlatestDateForPage,
+} from "../repositories/teletextPagesRepository";
 
 interface TeletextPageResponse {
   modifiedDate: Date;
@@ -49,43 +53,12 @@ async function getTeletextPageImage(
   return response.data;
 }
 
-async function getlatestDateForPage(
-  pageNumber: number
-): Promise<Date | undefined> {
-  const dateRow = await knexConnection
-    .select("modified_date")
-    .from(tables.teletextPages)
-    // A page's subpages are all updated at the same time so querying by page id is enough
-    .where({
-      page_number: pageNumber,
-    })
-    .orderBy("modified_date", "desc")
-    .limit(1)
-    .first();
-
-  return dateRow?.modified_date;
-}
-
 async function isNewerPage(
   pageNumber: number,
   modifiedDate: Date
 ): Promise<boolean> {
   const dbModifiedDate = await getlatestDateForPage(pageNumber);
   return dbModifiedDate === undefined || modifiedDate > dbModifiedDate;
-}
-
-async function saveImage(data: savePageData): Promise<void> {
-  logger.debug(
-    `Saving image for page ${data.pageNumber}, subpage ${data.subpageNumber}`
-  );
-  await knexConnection
-    .insert({
-      page_number: data.pageNumber,
-      subpage_number: data.subpageNumber,
-      modified_date: data.modifiedDate,
-      image: data.image,
-    })
-    .into(tables.teletextPages);
 }
 
 function subpageNumbersForPage(page: TeletextPage): number[] {
@@ -99,10 +72,11 @@ async function saveImageForSubpage(
   modifiedDate: Date
 ): Promise<void> {
   const image = await getTeletextPageImage(pageNumber, subpageNumber);
-  await saveImage({
-    pageNumber,
-    subpageNumber,
-    modifiedDate,
+  logger.debug(`Saving image for page ${pageNumber}, subpage ${subpageNumber}`);
+  await createTeletextPage({
+    page_number: pageNumber,
+    subpage_number: subpageNumber,
+    modified_date: modifiedDate,
     image,
   });
 }
