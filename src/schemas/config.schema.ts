@@ -12,7 +12,12 @@ export const configSchema = z.object({
   DB_USERNAME: z.string().nonempty(),
   DB_PASSWORD: z.string().nonempty(),
   DB_DATABASE: z.string().nonempty(),
-  SCHEDULING_ENABLED: z.coerce.boolean().default(true),
+  // Zod doesn't coerce "true" and "false" values as booleans so using a workaround
+  SCHEDULING_ENABLED: z
+    .string()
+    .transform((s) => JSON.parse(s))
+    .pipe(z.boolean())
+    .default("true"),
   FETCH_TELETEXT_SCHEDULE: z.string().default("*/10 * * * *"),
   TELETEXT_FIRST_PAGE: z.coerce.number().default(100),
 });
