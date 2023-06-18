@@ -1,4 +1,4 @@
-import { yleApiClient } from "../client/yleApiClient";
+import yleApiClient from "../client/yleApiClient";
 import {
   TeletextPage,
   teletextPageSchema,
@@ -48,9 +48,7 @@ function getPageNumbersFromPage(page: TeletextPage): Set<number> {
 }
 
 export async function fetchPageNumbers(): Promise<number[]> {
-  const pageResponse = await yleApiClient.get(
-    `v1/teletext/pages/${directoryPageNumber}.json`
-  );
+  const pageResponse = await yleApiClient.teletext.pages(directoryPageNumber);
   const teletextPage = teletextPageSchema.parse(pageResponse.data);
   return Array.from(getPageNumbersFromPage(teletextPage));
 }

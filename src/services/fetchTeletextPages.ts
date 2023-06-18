@@ -1,6 +1,6 @@
 import { AxiosError } from "axios";
 import { range } from "lodash";
-import { yleApiClient } from "../client/yleApiClient";
+import yleApiClient from "../client/yleApiClient";
 import {
   TeletextPage,
   teletextPageSchema,
@@ -28,9 +28,7 @@ async function getTeletextPageData(
 ): Promise<TeletextPageResponse | undefined> {
   // There are some pages that exist in the official listing but are in fact missing. Just log a message in that case.
   try {
-    const response = await yleApiClient.get(
-      `/v1/teletext/pages/${pageNumber}.json`
-    );
+    const response = await yleApiClient.teletext.pages(pageNumber);
     const lastModifiedDate = response.headers["last-modified"];
 
     return {
@@ -56,11 +54,9 @@ async function getTeletextPageImage(
   logger.debug(
     `Getting image for page ${pageNumber}, subpage ${subpageNumber}`
   );
-  const response = await yleApiClient.get(
-    `/v1/teletext/images/${pageNumber}/${subpageNumber}.png`,
-    {
-      responseType: "arraybuffer",
-    }
+  const response = await yleApiClient.teletext.images(
+    pageNumber,
+    subpageNumber
   );
 
   return response.data;
