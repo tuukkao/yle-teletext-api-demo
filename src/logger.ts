@@ -5,7 +5,14 @@ export const logger = createLogger({
   level: config.LOG_LEVEL,
   transports: [
     new transports.Console({
-      format: format.cli(),
+      format: format.combine(
+        format.colorize(),
+        format.padLevels(),
+        format.timestamp(),
+        format.printf(
+          (info) => `${info.timestamp} [${info.level}] ${info.message}`
+        )
+      ),
     }),
   ],
 });
