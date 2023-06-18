@@ -1,13 +1,12 @@
-import { AxiosError } from "axios";
 import { range } from "lodash";
 import yleApiClient from "../client/yleApiClient";
+import { config } from "../config";
+import { knexConnection, tables } from "../database";
+import { logger } from "../logger";
 import {
   TeletextPage,
   teletextPageSchema,
 } from "../schemas/teletextPage.schema";
-import { knexConnection, tables } from "../database";
-import { fetchPageNumbers } from "./fetchPageNumbers";
-import { logger } from "../logger";
 
 interface TeletextPageResponse {
   modifiedDate: Date;
@@ -25,26 +24,14 @@ interface savePageData {
 
 async function getTeletextPageData(
   pageNumber: number
-): Promise<TeletextPageResponse | undefined> {
-  // There are some pages that exist in the official listing but are in fact missing. Just log a message in that case.
-  try {
-    const response = await yleApiClient.teletext.pages(pageNumber);
-    const lastModifiedDate = response.headers["last-modified"];
+): Promise<TeletextPageResponse> {
+  const response = await yleApiClient.teletext.pages(pageNumber);
+  const lastModifiedDate = response.headers["last-modified"];
 
-    return {
-      modifiedDate: new Date(lastModifiedDate),
-      page: teletextPageSchema.parse(response.data),
-    };
-  } catch (error) {
-    if (
-      error instanceof AxiosError &&
-      error.response &&
-      error.response.status === 404
-    ) {
-      logger.info(`Page number ${pageNumber} doesn't exist.`);
-      return undefined;
-    }
-  }
+  return {
+    modifiedDate: new Date(lastModifiedDate),
+    page: teletextPageSchema.parse(response.data),
+  };
 }
 
 async function getTeletextPageImage(
@@ -132,26 +119,28 @@ async function saveImagesForSubpages(
   }
 }
 
-async function saveImagesForPage(pageNumber: number) {
+async function processPage(pageNumber: number): Promise<TeletextPage> {
   logger.debug(`Started processing page ${pageNumber}`);
-  const pageResponse = await getTeletextPageData(pageNumber);
-
-  if (pageResponse === undefined) return;
-
-  const { modifiedDate, page } = pageResponse;
+  const { modifiedDate, page } = await getTeletextPageData(pageNumber);
 
   if (await isNewerPage(pageNumber, modifiedDate)) {
     await saveImagesForSubpages(page, modifiedDate);
   } else {
     logger.debug(`page ${pageNumber} already has the latest copy, skipping.`);
   }
+
+  return page;
 }
 
 export async function fetchTeletextPages() {
+  async function getPage(pageNumber: number) {
+    const page = await processPage(pageNumber);
+
+    if (page.teletext.page.nextpg !== undefined)
+      await getPage(parseInt(page.teletext.page.nextpg));
+  }
+
   logger.info("Starting Teletext page import");
-  const allPages = await fetchPageNumbers();
-  await Promise.all(
-    allPages.map(async (pageNumber) => await saveImagesForPage(pageNumber))
-  );
+  await getPage(config.TELETEXT_FIRST_PAGE);
   logger.info("Teletext page import finished");
 }

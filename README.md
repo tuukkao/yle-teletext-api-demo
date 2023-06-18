@@ -78,9 +78,8 @@ I would refactor scheduled jobs (i.e. teletext page update) into a separate serv
 
 ## TO DO
 
-- [ ] Remove the logic for parsing page numbers out of directory pages and rely on each page's `nextpg` value instead, i.e. walk through all the pages starting from the first known one.
 - [ ] tests
-- [ ] Refactor modules to have some kind of dependency management and not relying on singleton imports
+- [ ] Refactor modules to have some kind of dependency management and not relying on singleton imports. Writing integration tests takes a lot of unnecessary work with this architecture.
 - [ ] Optimize Docker image size (e.g. fix migrations to run without TypeScript)
 - [ ] Configurable rate limiting for Yle api requests
 

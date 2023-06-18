@@ -12,7 +12,8 @@ export const configSchema = z.object({
   DB_USERNAME: z.string().nonempty(),
   DB_PASSWORD: z.string().nonempty(),
   DB_DATABASE: z.string().nonempty(),
-  SCHEDULING_ENABLED: z.boolean().default(true),
-  FETCH_TELETEXT_SCHEDULE: z.string().default("*/5 * * * *"),
+  SCHEDULING_ENABLED: z.coerce.boolean().default(true),
+  FETCH_TELETEXT_SCHEDULE: z.string().default("*/10 * * * *"),
+  TELETEXT_FIRST_PAGE: z.coerce.number().default(100),
 });
 export type ConfigSchema = z.infer<typeof configSchema>;
